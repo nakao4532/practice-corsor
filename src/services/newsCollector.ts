@@ -47,15 +47,35 @@ export class NewsCollector {
     }
   }
 
+  private async collectFromScrape(source: NewsSource): Promise<NewsItem[]> {
+    try {
+      const response = await axios.get(source.url);
+      // ここでスクレイピングのロジックを実装
+      // cheerio等のライブラリを使用することを推奨
+      console.log(`${source.name}のスクレイピングは未実装です`);
+      return [];
+    } catch (error) {
+      console.error(`Error scraping from ${source.name}:`, error);
+      return [];
+    }
+  }
+
   async collectAllNews(): Promise<NewsItem[]> {
     const allNews: NewsItem[] = [];
     
     for (const source of newsSources) {
-      if (source.type === 'rss') {
-        const news = await this.collectFromRSS(source);
+      try {
+        let news: NewsItem[] = [];
+        if (source.type === 'rss') {
+          news = await this.collectFromRSS(source);
+        } else if (source.type === 'scrape') {
+          news = await this.collectFromScrape(source);
+        }
+        console.log(`${source.name}から${news.length}件のニュースを取得しました`);
         allNews.push(...news);
+      } catch (error) {
+        console.error(`Error collecting news from ${source.name}:`, error);
       }
-      // 他のタイプ（API、スクレイピング）のハンドリングも追加可能
     }
 
     return allNews;
